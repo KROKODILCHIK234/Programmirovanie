@@ -1,72 +1,97 @@
 #include <iostream>
-#include <iomanip>
-#include <string>
+#include <stdexcept>
 
-class Date {
-private:
+using namespace std;
+
+class DateTime {
+public:
     int day;
-    int month1;
-    const std::string month2[12] = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-                                    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
+    int month;
     int year;
 
 public:
-    Date(int d = 1, int m = 1, int y = 2000) : day(d), month1(m), year(y) {}
-
-    // Метод для ввода даты
-    void inputDate() {
-        std::cout << "Введите дату (дд/мм/гггг):";
-        char dot;
-        std::cin >> day >> dot >> month1 >> dot >> year;
+    // Constructor
+    DateTime(int day, int month, int year) {
+        if (!isValidDate(day, month, year)) {
+            throw invalid_argument("Invalid date!");
+        }
+        this->day = day;
+        this->month = month;
+        this->year = year;
     }
 
-    // Метод для вывода даты в полном формате
-    void printFullDate() const {
-        std::cout << day << " " << month2[month1 - 1] << " " << year << std::endl;
-    }
-
-    // Перегрузка оператора << для форматированного вывода
-    friend std::ostream& operator<<(std::ostream& os, const Date& date) {
-        os << std::setw(2) << std::setfill('0') << date.day << "."
-           << std::setw(2) << std::setfill('0') << date.month1 << "."
-           << std::setw(2) << std::setfill('0') << (date.year % 100);
+    // Overloading operator << for output
+    friend ostream& operator<<(ostream& os, const DateTime& dt) {
+        os << dt.day << "." << dt.month << "." << dt.year;
         return os;
     }
 
-    // Метод для вычисления разницы между двумя датами в днях
-    int daysDifference(const Date& other) const {
-        int julian1 = getJulianDay();
-        int julian2 = other.getJulianDay();
-        return abs(julian2 - julian1);
+    // Overloading operator >> for input
+    friend istream& operator>>(istream& is, DateTime& dt) {
+        char c;
+        is >> dt.day >> c >> dt.month >> c >> dt.year;
+        if (c != '.') {
+            throw invalid_argument("Incorrect date format!");
+        }
+        return is;
     }
 
-private:
-    // Метод для расчета юлианской даты
+    // Check date validity
+    bool isValidDate(int day, int month, int year) const {
+        if (day < 1 || day > 31) {
+            return false;
+        }
+        if (month < 1 || month > 12) {
+            return false;
+        }
+        if (year < 1) {
+            return false;
+        }
+        if (isLeapYear() && month == 2 && day > 29) {
+            return false;
+        }
+        if (!isLeapYear() && month == 2 && day > 28) {
+            return false;
+        }
+        return true;
+    }
+
+    // Determine leap year by Julian day
+    bool isLeapYear() const {
+        int jd = getJulianDay();
+        return ((jd % 4) == 0);
+    }
+
+    // Method for calculating Julian day
     int getJulianDay() const {
-        int a = (14 - month1) / 12;
+        int a = (14 - month) / 12;
         int y = year + 4800 - a;
-        int m = month1 + 12 * a - 3;
+        int m = month + 12 * a - 3;
         return day + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
     }
 };
 
 int main() {
-    Date date1, date2;
+    try {
+        int day, month, year;
+        cout << "Enter day: ";
+        cin >> day;
+        cout << "Enter month: ";
+        cin >> month;
+        cout << "Enter year: ";
+        cin >> year;
 
-    // Ввод двух дат
-    date1.inputDate();
-    date2.inputDate();
+        DateTime dt(day, month, year);
+        cout << "Entered date: " << dt << endl;
 
-    // Вывод дат в пользовательском формате
-    std::cout << "1-я дата: " << date1 << std::endl;
-    std::cout << "2-я дата: " << date2 << std::endl;
-
-    // Вывод разницы между датами в днях
-    std::cout << "Разница в днях: " << date1.daysDifference(date2) << std::endl;
-
-    // Вывод полных дат
-    date1.printFullDate();
-    date2.printFullDate();
+        if (dt.isLeapYear()) {
+            cout << "Year " << dt.year << " is a leap year." << endl;
+        } else {
+            cout << "Year " << dt.year << " is not a leap year." << endl;
+        }
+    } catch (const invalid_argument& e) {
+        cerr << e.what() << endl;
+    }
 
     return 0;
 }
