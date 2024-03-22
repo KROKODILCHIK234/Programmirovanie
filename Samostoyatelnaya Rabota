@@ -15,7 +15,7 @@ public:
     DateTime() {
         day = 1;
         month = 1;
-        year = 2000;
+        year = 2001;
         hour = 0;
         minute = 0;
         second = 0;
@@ -104,7 +104,7 @@ public:
 
 int main() {
     DateTime dt;
-    dt.inputDateTime("2024-04-22T00:00:00");
+    dt.inputDateTime("2001-01-01T00:00:00");
     dt.printDateTime();
     dt.printDate(1);
     dt.printDate(2);
