@@ -1,115 +1,72 @@
 #include <iostream>
-#include <string>
-#include <cmath>
 #include <iomanip>
+#include <string>
 
-class DateTime {
+class Date {
 private:
     int day;
-    int month;
+    int month1;
+    const std::string month2[12] = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                                    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
     int year;
-    int hour;
-    int minute;
-    int second;
+
 public:
-    DateTime() {
-        day = 1;
-        month = 1;
-        year = 2001;
-        hour = 0;
-        minute = 0;
-        second = 0;
+    Date(int d = 1, int m = 1, int y = 2000) : day(d), month1(m), year(y) {}
+
+    // Метод для ввода даты
+    void inputDate() {
+        std::cout << "Введите дату (дд/мм/гггг):";
+        char dot;
+        std::cin >> day >> dot >> month1 >> dot >> year;
     }
 
-    void inputDateTime(std::string dateTimeStr) {
-        sscanf(dateTimeStr.c_str(), "%d-%d-%dT%d:%d:%d", &year, &month, &day, &hour, &minute, &second);
+    // Метод для вывода даты в полном формате
+    void printFullDate() const {
+        std::cout << day << " " << month2[month1 - 1] << " " << year << std::endl;
     }
 
-    void printDateTime() {
-        std::cout << year << "-" << month << "-" << day << "T" << hour << ":" << minute << ":" << second << std::endl;
+    // Перегрузка оператора << для форматированного вывода
+    friend std::ostream& operator<<(std::ostream& os, const Date& date) {
+        os << std::setw(2) << std::setfill('0') << date.day << "."
+           << std::setw(2) << std::setfill('0') << date.month1 << "."
+           << std::setw(2) << std::setfill('0') << (date.year % 100);
+        return os;
     }
 
-    void printDate(int format = 1) {
-        if (format == 1) {
-            std::cout << day << "." << month << "." << year << std::endl;
-        } else if (format == 2) {
-            std::string months[] = {"января", "февраля", "марта", "апреля", "мая", "июня",
-                                    "июля", "августа", "сентября", "октября", "ноября", "декабря"};
-            std::cout << day << " " << months[month - 1] << " " << year << std::endl;
-        } else if (format == 3) {
-            std::cout << std::setw(2) << std::setfill('0') << day << ".";
-            std::cout << std::setw(2) << std::setfill('0') << month << ".";
-            std::cout << std::setw(2) << std::setfill('0') << (year % 100) << std::endl;
-        }
+    // Метод для вычисления разницы между двумя датами в днях
+    int daysDifference(const Date& other) const {
+        int julian1 = getJulianDay();
+        int julian2 = other.getJulianDay();
+        return abs(julian2 - julian1);
     }
 
-    int getDayOfWeek() {
-        int jd = (day + (153 * (month + 12 * ((14 - month) / 12) - 3 + 2) / 5) +
-                 (365 * (year + 4800 - ((14 - month) / 12))) +
-                 ((year + 4800 - ((14 - month) / 12)) / 4) - ((year + 4800 - ((14 - month) / 12)) / 100) + ((year + 4800 - ((14 - month) / 12)) / 400) - 32045) % 7;
-        return jd + 1;
-    }
-
-    int diffDays(DateTime dt) {
-        int days1 = day + (((153 * (month + 12 * ((14 - month) / 12) - 3 + 2) / 5) + 365 * (year + 4800 - ((14 - month) / 12)) +
-                           ((year + 4800 - ((14 - month) / 12)) / 4) - ((year + 4800 - ((14 - month) / 12)) / 100) + ((year + 4800 - ((14 - month) / 12)) / 400) - 32045));
-
-        int days2 = dt.day + (((153 * (dt.month + 12 * ((14 - dt.month) / 12) - 3 + 2) / 5) + 365 * (dt.year + 4800 - ((14 - dt.month) / 12)) +
-                           ((dt.year + 4800 - ((14 - dt.month) / 12)) / 4) - ((dt.year + 4800 - ((14 - dt.month) / 12)) / 100) + ((dt.year + 4800 - ((14 - dt.month) / 12)) / 400) - 32045));
-
-        return std::abs(days2 - days1);
-    }
-
-    bool isValidDate() {
-        if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
-            return false;
-        }
-        if (month == 4 || month == 6 || month == 9 || month == 11) {
-            if (day > 30) {
-                return false;
-            }
-        }
-        if (month == 2) {
-            if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {
-                if (day > 29) {
-                    return false;
-                }
-            } else {
-                if (day > 28) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    void getEasterDate() {
-        int a = year % 19;
-        int b = year / 100;
-        int c = year % 100;
-        int d = b / 4;
-        int e = b % 4;
-        int f = (b + 8) / 25;
-        int g = (b - f + 1) / 3;
-        int h = (19 * a + b - d - g + 15) % 30;
-        int i = c / 4;
-        int k = c % 4;
-        int l = (32 + 2 * e + 2 * i - h - k) % 7;
-        int m = (a + 11*h + 22*l) / 451;
-        int monthEaster = (h + l - 7*m + 114) / 31;
-        int dayEaster = ((h + l - 7*m + 114) % 31) + 1;
-        std::cout << "Пасха в " << dayEaster << "." << monthEaster << "." << year << std::endl;
+private:
+    // Метод для расчета юлианской даты
+    int getJulianDay() const {
+        int a = (14 - month1) / 12;
+        int y = year + 4800 - a;
+        int m = month1 + 12 * a - 3;
+        return day + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
     }
 };
 
 int main() {
-    DateTime dt;
-    dt.inputDateTime("2001-01-01T00:00:00");
-    dt.printDateTime();
-    dt.printDate(1);
-    dt.printDate(2);
-    dt.printDate(3);
-    dt.getEasterDate();
+    Date date1, date2;
+
+    // Ввод двух дат
+    date1.inputDate();
+    date2.inputDate();
+
+    // Вывод дат в пользовательском формате
+    std::cout << "1-я дата: " << date1 << std::endl;
+    std::cout << "2-я дата: " << date2 << std::endl;
+
+    // Вывод разницы между датами в днях
+    std::cout << "Разница в днях: " << date1.daysDifference(date2) << std::endl;
+
+    // Вывод полных дат
+    date1.printFullDate();
+    date2.printFullDate();
 
     return 0;
 }
