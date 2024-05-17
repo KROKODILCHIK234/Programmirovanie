@@ -1,107 +1,66 @@
-#ifndef RATIONAL_VECTOR_H
-#define RATIONAL_VECTOR_H
+#pragma once
+
+#ifndef VECTOR_VECTOR_H
+#define VECTOR_VECTOR_H
 
 #include <iostream>
-#include <algorithm>
 
-template<typename T>
-class Vector {
-private:
-    T* array; // Указатель на первый элемент массива
-    size_t capacity; // Размер выделенной памяти
-    size_t size; // Текущий размер вектора
+using namespace std;
 
-public:
-    // Конструктор по умолчанию
-    Vector() : array(nullptr), capacity(0), size(0) {}
 
-    // Конструктор с заданным начальным размером
-    Vector(size_t initial_size) : array(new T[initial_size]), capacity(initial_size), size(initial_size) {}
-
-    // Деструктор
-    ~Vector() {
-        delete[] array;
+class ArrayException{
+    void f(int k, int index, int size) {
+        try {
+            int res = g(k, index, size);
+        } catch (ArrayException &e) {
+            cout << "Произошла ошибка!!" << endl;
+        }
     }
-
-    // Метод добавления элемента в конец вектора
-    void push_back(const T& value) {
-        // Если массив уже заполнен, увеличиваем его размер вдвое
-        if (size >= capacity) {
-            reserve(capacity == 0 ? 1 : capacity * 2);
-        }
-        array[size++] = value;
-    }
-
-    // Метод удаления элемента из указанной позиции
-    void erase(size_t index) {
-        if (index >= size) {
-            throw std::out_of_range("Index out of range");
-        }
-        // Сдвигаем элементы влево начиная с индекса до конца массива
-        for (size_t i = index; i < size - 1; ++i) {
-            array[i] = array[i + 1];
-        }
-        --size;
-    }
-
-    // Метод добавления элемента в указанную позицию
-    void insert(size_t index, const T& value) {
-        if (index > size) {
-            throw std::out_of_range("Index out of range");
-        }
-
-        // Если массив уже заполнен, увеличиваем его размер вдвое
-        if (size >= capacity) {
-            reserve(capacity == 0 ? 1 : capacity * 2);
-        }
-
-        // Сдвигаем элементы вправо начиная с конца массива до индекса
-        for (size_t i = size; i > index; --i) {
-            array[i] = array[i - 1];
-        }
-        array[index] = value;
-        ++size;
-    }
-
-    const T& operator[](size_t index) const {
-        if (index >= size) {
-            throw std::out_of_range("Index out of range");
-        }
-
-        return *(array + index);
-    }
-
-    // Метод получения размера вектора
-    size_t getSize() const {
-        return size;
-    }
-
-    // Метод выделения памяти для вектора
-    void reserve(size_t new_capacity) {
-        if (new_capacity <= capacity) {
-            return;
-        }
-        T* new_array = new T[new_capacity];
-        for (size_t i = 0; i < size; ++i) {
-            new_array[i] = std::move(array[i]);
-        }
-        delete[] array;
-        array = new_array;
-        capacity = new_capacity;
-    }
-
-    // Оператор вывода для класса Vector
-    friend std::ostream& operator<<(std::ostream& out, const Vector<T>& vec) {
-        out << "[";
-        for (size_t i = 0; i < vec.size; ++i) {
-            out << vec.array[i];
-            if (i != vec.size - 1) {
-                out << ", ";
-            }
-        }
-        out << "]";
-        return out;
+    int g(int n, int index, int size){
+        if (index < 0 || index >= size)
+            throw ArrayException();
+        else
+            return n+1;
     }
 };
 
-#endif // RATIONAL_VECTOR_H
+
+
+const int DEFAULT_CAPACITY = 10;
+const int DEFAULT_MAX_SIZE = 10;
+
+class Vector {
+private:
+    int* ptr;
+    int size;
+    int maxSize = DEFAULT_MAX_SIZE;
+    int capacity;
+
+public:
+    explicit Vector(int startCapacity=DEFAULT_CAPACITY);
+    Vector(int initialSize, int initialValue);
+    ~Vector();
+    Vector(const Vector &arr);
+
+    Vector& operator =(const Vector& arr);
+    bool operator ==(const Vector& other) const;
+    bool operator !=(const Vector& other) const;
+    int& operator [](int index);
+
+    int getSize();
+    int getCapacity();
+
+    bool isEmpty();
+    void clear();
+
+    void increaseCapacity(int newCapacity);
+    void push_back(int element);
+    void pop_back();
+    void remove(int index);
+
+
+    friend ostream& operator <<(ostream& out, const Vector& arr);
+};
+
+
+#endif //VECTOR_VECTOR_H
