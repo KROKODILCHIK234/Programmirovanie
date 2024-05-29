@@ -3,6 +3,7 @@
 
 #include "Cell.h"
 #include <vector>
+#include <utility>
 
 class Field {
 private:
@@ -23,6 +24,9 @@ public:
     void flagCell(int row, int col);
     bool checkWin() const;
     void displayField(bool showBombs) const;
+
+    std::pair<int, int> autoplaySelectCell();
+    void autoplay();
 };
 
 #endif // FIELD_H
