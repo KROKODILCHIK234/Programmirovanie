@@ -15,39 +15,52 @@ int main() {
     field.placeBombs();
     field.calculateBombsNearby();
 
-    bool gameOver = false;
-    while (!gameOver) {
-        field.displayField(false);
+    char choice;
+    std::cout << "Do you want to watch the autoplay (a) or play manually (m)? ";
+    std::cin >> choice;
 
-        char action;
-        int selectedRow, selectedCol;
-        std::cout << "Enter 'o' to open a cell or 'f' to flag/unflag a cell: ";
-        std::cin >> action >> selectedRow >> selectedCol;
+    if (choice == 'a') {
+        field.autoplay();
+    }
+    else if (choice == 'm') {
+        bool gameOver = false;
+        while (!gameOver) {
+            field.displayField(false);
 
-        if (selectedRow < 0 || selectedRow >= rows || selectedCol < 0 || selectedCol >= cols) {
-            std::cerr << "Invalid cell position. Try again." << std::endl;
-            continue;
-        }
+            char action;
+            int selectedRow, selectedCol;
+            std::cout << "Enter 'o' to open a cell or 'f' to flag/unflag a cell: ";
+            std::cin >> action >> selectedRow >> selectedCol;
 
-        if (action == 'o') {
-            gameOver = !field.openCell(selectedRow, selectedCol);
-        }
-        else if (action == 'f') {
-            field.flagCell(selectedRow, selectedCol);
-        }
-        else {
-            std::cerr << "Invalid action. Use 'o' to open or 'f' to flag." << std::endl;
-        }
+            if (selectedRow < 0 || selectedRow >= rows || selectedCol < 0 || selectedCol >= cols) {
+                std::cerr << "Invalid cell position. Try again." << std::endl;
+                continue;
+            }
 
-        if (gameOver) {
-            field.displayField(true);
-            std::cout << "Game Over! You stepped on a bomb." << std::endl;
+            if (action == 'o') {
+                gameOver = !field.openCell(selectedRow, selectedCol);
+            }
+            else if (action == 'f') {
+                field.flagCell(selectedRow, selectedCol);
+            }
+            else {
+                std::cerr << "Invalid action. Use 'o' to open or 'f' to flag." << std::endl;
+            }
+
+            if (gameOver) {
+                field.displayField(true);
+                std::cout << "Game Over! You stepped on a bomb." << std::endl;
+            }
+            else if (field.checkWin()) {
+                field.displayField(true);
+                std::cout << "Congratulations! You've won the game!" << std::endl;
+                gameOver = true;
+            }
         }
-        else if (field.checkWin()) {
-            field.displayField(true);
-            std::cout << "Congratulations! You've won the game!" << std::endl;
-            gameOver = true;
-        }
+    }
+    else {
+        std::cerr << "Invalid choice. Exiting..." << std::endl;
+        return 1;
     }
 
     return 0;
