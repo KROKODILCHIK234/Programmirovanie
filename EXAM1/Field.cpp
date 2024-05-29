@@ -1,6 +1,8 @@
 #include "Field.h"
 #include <iostream>
 #include <random>
+#include <chrono>
+#include <thread>
 
 Field::Field(int numRows, int numCols, int bombs) : rows(numRows), cols(numCols), totalBombs(bombs), openedCells(0) {
     cells.resize(rows, std::vector<Cell>(cols));
@@ -45,15 +47,15 @@ void Field::calculateBombsNearby() {
 bool Field::openCell(int row, int col) {
     if (cells[row][col].getFlagged()) {
         std::cout << "Cell is flagged. Unflag it before opening." << std::endl;
-        return true;
+        return false;
     }
     if (cells[row][col].getOpen()) {
         std::cout << "Cell is already open." << std::endl;
-        return true;
+        return false;
     }
     if (cells[row][col].getBomb()) {
         cells[row][col].setOpen();
-        return false;
+        return true;
     }
 
     expandEmptyArea(row, col);
@@ -85,7 +87,7 @@ void Field::displayField(bool showBombs) const {
             }
             else {
                 if (cells[i][j].getFlagged()) {
-                    std::cout << "* ";
+                    std::cout << "F ";
                 }
                 else if (showBombs && cells[i][j].getBomb()) {
                     std::cout << "* ";
@@ -116,4 +118,44 @@ void Field::expandEmptyArea(int row, int col) {
             }
         }
     }
+}
+
+std::pair<int, int> Field::autoplaySelectCell() {
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            if (!cells[i][j].getOpen()) {
+                return std::make_pair(i, j);
+            }
+        }
+    }
+    return std::make_pair(-1, -1);
+}
+
+void Field::autoplay() {
+    std::pair<int, int> selectedCell = autoplaySelectCell();
+
+    while (selectedCell.first != -1 && selectedCell.second != -1) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        std::cout << "Auto-playing cell (" << selectedCell.first << ", " << selectedCell.second << ")... ";
+
+        bool gameOver = !openCell(selectedCell.first, selectedCell.second);
+
+        if (gameOver) {
+            std::cout << "Game over!" << std::endl;
+            break;
+        }
+
+        displayField(false);
+        std::cout << std::endl;
+
+        if (checkWin()) {
+            std::cout << "Congratulations! You've won the game!" << std::endl;
+            break;
+        }
+
+        selectedCell = autoplaySelectCell();
+    }
+
+    std::cout << "Autoplay finished." << std::endl;
 }
